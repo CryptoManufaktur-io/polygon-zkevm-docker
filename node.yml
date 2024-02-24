@@ -1,0 +1,150 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  zkevm-rpc:
+    build:
+      context: ./rpc-sync
+      dockerfile: Dockerfile
+      args:
+        - NODE_DOCKER_TAG=${NODE_DOCKER_TAG}
+        - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
+    image: zkevm-rpc:${NODE_DOCKER_TAG}
+    pull_policy: build
+    container_name: zkevm-rpc
+    restart: unless-stopped
+    depends_on:
+      zkevm-pool-db:
+        condition: service_healthy
+      zkevm-state-db:
+        condition: service_healthy
+      zkevm-sync:
+        condition: service_started
+    environment:
+      - ZKEVM_NODE_ETHERMAN_URL=${ZKEVM_NODE_ETHERMAN_URL}
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "/app/zkevm-node run --network ${ZKEVM_NETWORK} --cfg /app/config.toml --components rpc"
+    labels:
+      - metrics.scrape=true
+      - metrics.port=9091
+      - metrics.path=/metrics
+      - traefik.http.routers.${RPC_HOST}.service=${RPC_HOST}
+      - traefik.http.routers.${RPC_HOST}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST}.rule=Host(`${RPC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST}lb.service=${RPC_HOST}
+      - traefik.http.routers.${RPC_HOST}lb.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST}.loadbalancer.server.port=8545
+    <<: *logging
+
+  zkevm-sync:
+    build:
+      context: ./rpc-sync
+      dockerfile: Dockerfile
+      args:
+        - NODE_DOCKER_TAG=${NODE_DOCKER_TAG}
+        - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
+    image: zkevm-sync:${NODE_DOCKER_TAG}
+    pull_policy: build
+    container_name: zkevm-sync
+    restart: unless-stopped
+    depends_on:
+      zkevm-state-db:
+        condition: service_healthy
+    environment:
+      - ZKEVM_NODE_ETHERMAN_URL=${ZKEVM_NODE_ETHERMAN_URL}
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "/app/zkevm-node run --network ${ZKEVM_NETWORK} --cfg /app/config.toml --components synchronizer"
+    labels:
+      - metrics.scrape=true
+      - metrics.port=9091
+      - metrics.path=/metrics
+    <<: *logging
+
+  zkevm-state-db:
+    build:
+      context: ./state-db
+      dockerfile: Dockerfile
+      args:
+        - POSTGRES_DOCKER_TAG=${POSTGRES_DOCKER_TAG}
+        - POSTGRES_CONF_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/postgresql.conf
+        - PROVER_INIT_SQL_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/db/scripts/init_prover_db.sql
+    image: zkevm-state-db:${POSTGRES_DOCKER_TAG}
+    pull_policy: build
+    container_name: zkevm-state-db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - zkevm_state_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=state_user
+      - POSTGRES_PASSWORD=state_password
+      - POSTGRES_DB=state_db
+    command:
+      - "postgres"
+      - "-N"
+      - "500"
+      - "-c"
+      - "config_file=/etc/postgresql.conf"
+    <<: *logging
+
+  zkevm-pool-db:
+    container_name: zkevm-pool-db
+    restart: unless-stopped
+    image: postgres:${POSTGRES_DOCKER_TAG}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - zkevm_pool_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=pool_user
+      - POSTGRES_PASSWORD=pool_password
+      - POSTGRES_DB=pool_db
+    command:
+      - "postgres"
+      - "-N"
+      - "500"
+    <<: *logging
+
+  zkevm-prover:
+    build:
+      context: ./prover
+      dockerfile: Dockerfile
+      args:
+        - PROVER_DOCKER_TAG=${PROVER_DOCKER_TAG}
+        - PROVER_JSON_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/prover.config.json
+    image: zkevm-prover:${PROVER_DOCKER_TAG}
+    pull_policy: build
+    container_name: zkevm-prover
+    restart: unless-stopped
+    depends_on:
+      zkevm-state-db:
+        condition: service_healthy
+    ports:
+      - 50061:50061 # MT
+      - 50071:50071 # Executor
+    command: >
+      zkProver -c /usr/src/app/config.json
+    <<: *logging
+
+volumes:
+  zkevm_state_data: {}
+  zkevm_pool_data: {}

@@ -1,0 +1,5 @@
+# To be used in conjunction with node.yml
+services:
+  zkevm-rpc:
+    ports:
+      - ${MAPPED_RPC_PORT}:8545

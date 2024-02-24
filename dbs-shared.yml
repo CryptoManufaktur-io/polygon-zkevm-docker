@@ -1,0 +1,8 @@
+# To be used in conjunction with node.yml
+services:
+  zkevm-state-db:
+    ports:
+      - 5432:5432
+  zkevm-pool-db:
+    ports:
+      - 5433:5432
