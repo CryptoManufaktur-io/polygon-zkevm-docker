@@ -14,8 +14,6 @@ The `./zkevm` script can be used as a quick-start:
 
 To update the software, run `./zkevm update` and then `./zkevm up`
 
-If you want the zkevm RPC port exposed, use `node-shared.yml` in `COMPOSE_FILE` inside `.env`.
-
 If meant to be used with [central-proxy-docker](https://github.com/CryptoManufaktur-io/central-proxy-docker) for traefik
 and Prometheus remote write; use `:ext-network.yml` in `COMPOSE_FILE` inside `.env` in that case.
 
