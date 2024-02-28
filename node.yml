@@ -38,6 +38,7 @@ services:
       - metrics.scrape=true
       - metrics.port=9091
       - metrics.path=/metrics
+      - traefik.enable=true
       - traefik.http.routers.${RPC_HOST}.service=${RPC_HOST}
       - traefik.http.routers.${RPC_HOST}.entrypoints=websecure
       - traefik.http.routers.${RPC_HOST}.rule=Host(`${RPC_HOST}.${DOMAIN}`)
