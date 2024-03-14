@@ -15,7 +15,7 @@ services:
         - NODE_DOCKER_TAG=${NODE_DOCKER_TAG}
         - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
     image: zkevm-rpc:${NODE_DOCKER_TAG}
-    pull_policy: build
+    pull_policy: never
     networks:
       default:
         aliases:
@@ -67,7 +67,7 @@ services:
         - NODE_DOCKER_TAG=${NODE_DOCKER_TAG}
         - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
     image: zkevm-sync:${NODE_DOCKER_TAG}
-    pull_policy: build
+    pull_policy: never
     networks:
       default:
         aliases:
@@ -76,6 +76,8 @@ services:
     depends_on:
       zkevm-state-db:
         condition: service_healthy
+      zkevm-prover:
+        condition: service_started
     environment:
       - ZKEVM_NODE_ETHERMAN_URL=${ZKEVM_NODE_ETHERMAN_URL}
     command:
@@ -154,7 +156,7 @@ services:
         - PROVER_DOCKER_TAG=${PROVER_DOCKER_TAG}
         - PROVER_JSON_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/prover.config.json
     image: zkevm-prover:${PROVER_DOCKER_TAG}
-    pull_policy: build
+    pull_policy: never
     networks:
       default:
         aliases:
