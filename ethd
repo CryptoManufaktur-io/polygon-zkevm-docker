@@ -584,7 +584,9 @@ version() {
       docompose exec zkevm-state-db postgres --version
       echo
       echo "zkevm-prover"
+      set +e
       docompose exec zkevm-prover zkProver --version
+      set -e
       echo
       echo "zkevm-rpc"
       docompose exec zkevm-rpc /app/zkevm-node --version
