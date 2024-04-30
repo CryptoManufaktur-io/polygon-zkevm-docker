@@ -99,7 +99,7 @@ services:
         - POSTGRES_CONF_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/postgresql.conf
         - PROVER_INIT_SQL_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/db/scripts/init_prover_db.sql
     image: zkevm-state-db:${POSTGRES_DOCKER_TAG}
-    pull_policy: build
+    pull_policy: never
     networks:
       default:
         aliases:
