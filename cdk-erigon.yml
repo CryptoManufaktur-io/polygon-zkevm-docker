@@ -1,0 +1,74 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  zkevm-rpc:
+    image: hermeznetwork/cdk-erigon:${ERIGON_DOCKER_TAG}
+    restart: "unless-stopped"
+    user: 1000:1000
+    volumes:
+      - zkevm-erigon-data:/home/erigon/.local/share/erigon
+    mem_swappiness: 0
+    command:
+      - --chain=hermez-mainnet
+      - --externalcl=true
+      - --maxpeers=32
+      - --downloader.disable.ipv6=true
+      - --zkevm.l2-chain-id=1101
+      - --zkevm.l2-sequencer-rpc-url=https://zkevm-rpc.com
+      - --zkevm.l2-datastreamer-url=stream.zkevm-rpc.com:6900
+      - --zkevm.address-sequencer=""
+      - --zkevm.address-zkevm=""
+      - --zkevm.address-admin="0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
+      - --zkevm.address-rollup="0x519E42c24163192Dca44CD3fBDCEBF6be9130987"
+      - --zkevm.address-ger-manager="0x580bda1e7A0CFAe92Fa7F6c20A3794F169CE3CFb"
+      - --zkevm.l1-chain-id=1
+      - --zkevm.l1-rpc-url=${L1_RPC}
+      - --zkevm.l1-rollup-id=1
+      - --zkevm.l1-block-range=20000
+      - --zkevm.l1-query-delay=6000
+      - --zkevm.l1-first-block=16896700
+      - --zkevm.rpc-ratelimit=0
+      - --zkevm.datastream-version=2
+      - --http=true
+      - --http.api=eth,net,trace,web3,erigon,zkevm
+      - --http.addr=0.0.0.0
+      - --http.port=${RPC_PORT}
+      - --http.vhosts=any
+      - --http.corsdomain=any
+      - --ws=true
+      - --metrics
+      - --metrics.addr
+      - 0.0.0.0
+    labels:
+      - metrics.scrape=true
+      - metrics.port=6060
+      - metrics.path=/debug/metrics/prometheus
+      - traefik.enable=true
+      - traefik.http.routers.${RPC_HOST}.service=${RPC_HOST}
+      - traefik.http.routers.${RPC_HOST}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST}.rule=Host(`${RPC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST}lb.service=${RPC_HOST}
+      - traefik.http.routers.${RPC_HOST}lb.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST}.loadbalancer.server.port=${RPC_PORT}
+      - traefik.http.routers.${WS_HOST}.service=${WS_HOST}
+      - traefik.http.routers.${WS_HOST}.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST}.rule=Host(`${WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${WS_HOST}lb.service=${WS_HOST}
+      - traefik.http.routers.${WS_HOST}lb.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST}lb.rule=Host(`${WS_LB}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${WS_HOST}.loadbalancer.server.port=${RPC_PORT}
+    <<: *logging
+
+volumes:
+  zkevm_erigon_data:

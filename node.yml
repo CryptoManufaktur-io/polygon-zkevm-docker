@@ -29,7 +29,7 @@ services:
       zkevm-sync:
         condition: service_started
     environment:
-      - ZKEVM_NODE_ETHERMAN_URL=${ZKEVM_NODE_ETHERMAN_URL}
+      - ZKEVM_NODE_ETHERMAN_URL=${L1_RPC}
     command:
       - "/bin/sh"
       - "-c"
@@ -47,7 +47,7 @@ services:
       - traefik.http.routers.${RPC_HOST}lb.entrypoints=websecure
       - traefik.http.routers.${RPC_HOST}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
       - traefik.http.routers.${RPC_HOST}lb.tls.certresolver=letsencrypt
-      - traefik.http.services.${RPC_HOST}.loadbalancer.server.port=8545
+      - traefik.http.services.${RPC_HOST}.loadbalancer.server.port=${RPC_PORT}
       - traefik.http.routers.${WS_HOST}.service=${WS_HOST}
       - traefik.http.routers.${WS_HOST}.entrypoints=websecure
       - traefik.http.routers.${WS_HOST}.rule=Host(`${WS_HOST}.${DOMAIN}`)
@@ -56,7 +56,7 @@ services:
       - traefik.http.routers.${WS_HOST}lb.entrypoints=websecure
       - traefik.http.routers.${WS_HOST}lb.rule=Host(`${WS_LB}.${DOMAIN}`)
       - traefik.http.routers.${WS_HOST}lb.tls.certresolver=letsencrypt
-      - traefik.http.services.${WS_HOST}.loadbalancer.server.port=8546
+      - traefik.http.services.${WS_HOST}.loadbalancer.server.port=${WS_PORT}
     <<: *logging
 
   zkevm-sync:
@@ -79,7 +79,7 @@ services:
       zkevm-prover:
         condition: service_started
     environment:
-      - ZKEVM_NODE_ETHERMAN_URL=${ZKEVM_NODE_ETHERMAN_URL}
+      - ZKEVM_NODE_ETHERMAN_URL=${L1_RPC}
     command:
       - "/bin/sh"
       - "-c"
@@ -173,5 +173,5 @@ services:
     <<: *logging
 
 volumes:
-  zkevm_state_data: {}
-  zkevm_pool_data: {}
+  zkevm_state_data:
+  zkevm_pool_data:

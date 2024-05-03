@@ -1,0 +1,6 @@
+# To be used in conjunction with node.yml or cdk-erigon.yml
+services:
+  zkevm-rpc:
+    ports:
+      - ${SHARE_IP:-}:${RPC_PORT}:${RPC_PORT:-8545}/tcp
+      - ${SHARE_IP:-}:${WS_PORT}:${WS_PORT:-8546}/tcp
