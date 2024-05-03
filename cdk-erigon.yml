@@ -35,13 +35,16 @@ services:
       - --zkevm.l1-first-block=16896700
       - --zkevm.rpc-ratelimit=0
       - --zkevm.datastream-version=2
-      - --http=true
-      - --http.api=eth,net,trace,web3,erigon,zkevm
-      - --http.addr=0.0.0.0
-      - --http.port=${RPC_PORT}
-      - --http.vhosts=any
-      - --http.corsdomain=any
-      - --ws=true
+      - --http
+      - --http.api
+      - eth,net,trace,web3,erigon,zkevm
+      - --http.addr
+      - 0.0.0.0
+      - --http.port
+      - ${RPC_PORT}
+      - --http.vhosts=*
+      - --http.corsdomain=*
+      - --ws
       - --metrics
       - --metrics.addr
       - 0.0.0.0
