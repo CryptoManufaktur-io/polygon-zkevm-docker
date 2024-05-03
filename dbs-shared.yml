@@ -1,8 +1,8 @@
-# To be used in conjunction with node.yml
+# To be used in conjunction with node.yml: To expose Postgres ports for troubleshooting
 services:
   zkevm-state-db:
     ports:
-      - 5432:5432
+      - ${SHARE_IP:-}:5432:5432/tcp
   zkevm-pool-db:
     ports:
-      - 5433:5432
+      - ${SHARE_IP:-}:5433:5432/tcp
