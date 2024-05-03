@@ -71,4 +71,4 @@ services:
     <<: *logging
 
 volumes:
-  zkevm_erigon_data:
+  zkevm-erigon-data:
