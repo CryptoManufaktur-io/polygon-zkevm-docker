@@ -16,10 +16,6 @@ services:
         - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
     image: zkevm-rpc:${NODE_DOCKER_TAG}
     pull_policy: never
-    networks:
-      default:
-        aliases:
-          - zkevm-rpc
     restart: unless-stopped
     depends_on:
       zkevm-pool-db:
@@ -30,10 +26,18 @@ services:
         condition: service_started
     environment:
       - ZKEVM_NODE_ETHERMAN_URL=${L1_RPC}
-    command:
-      - "/bin/sh"
-      - "-c"
-      - "/app/zkevm-node run --network ${ZKEVM_NETWORK} --cfg /app/config.toml --components rpc"
+      - RPC_PORT=${RPC_PORT}
+      - WS_PORT=${WS_PORT}
+    entrypoint:
+      - docker-entrypoint.sh
+      - /app/zkevm-node
+      - run
+      - --network
+      - ${ZKEVM_NETWORK}
+      - --cfg
+      - /app/config.toml
+      - --components
+      - rpc
     labels:
       - metrics.scrape=true
       - metrics.port=9091
@@ -80,10 +84,15 @@ services:
         condition: service_started
     environment:
       - ZKEVM_NODE_ETHERMAN_URL=${L1_RPC}
-    command:
-      - "/bin/sh"
-      - "-c"
-      - "/app/zkevm-node run --network ${ZKEVM_NETWORK} --cfg /app/config.toml --components synchronizer"
+    entrypoint:
+      - /app/zkevm-node
+      - run
+      - --network
+      - ${ZKEVM_NETWORK}
+      - --cfg
+      - /app/config.toml
+      - --components
+      - synchronizer
     labels:
       - metrics.scrape=true
       - metrics.port=9091
@@ -100,10 +109,6 @@ services:
         - PROVER_INIT_SQL_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/db/scripts/init_prover_db.sql
     image: zkevm-state-db:${POSTGRES_DOCKER_TAG}
     pull_policy: never
-    networks:
-      default:
-        aliases:
-          - zkevm-state-db
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
@@ -125,10 +130,6 @@ services:
     <<: *logging
 
   zkevm-pool-db:
-    networks:
-      default:
-        aliases:
-          - zkevm-pool-db
     restart: unless-stopped
     image: postgres:${POSTGRES_DOCKER_TAG}
     healthcheck:
@@ -157,10 +158,6 @@ services:
         - PROVER_JSON_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/prover.config.json
     image: zkevm-prover:${PROVER_DOCKER_TAG}
     pull_policy: never
-    networks:
-      default:
-        aliases:
-          - zkevm-prover
     restart: unless-stopped
     depends_on:
       zkevm-state-db:
@@ -168,8 +165,10 @@ services:
     ports:
       - 50061:50061 # MT
       - 50071:50071 # Executor
-    command: >
-      zkProver -c /usr/src/app/config.json
+    entrypoint:
+      - zkProver
+      - -c
+      - /usr/src/app/config.json
     <<: *logging
 
 volumes:
