@@ -15,6 +15,8 @@ cdk-erigon.yml, and `L1_RPC`
 
 To update the software, run `./zkevmd update` and then `./zkevmd up`
 
+You can share the RPC/WS ports locally by adding `rpc-shared.yml` to in `COMPOSE_FILE` inside `.env`.
+
 If meant to be used with [central-proxy-docker](https://github.com/CryptoManufaktur-io/central-proxy-docker) for traefik
 and Prometheus remote write; use `:ext-network.yml` in `COMPOSE_FILE` inside `.env` in that case.
 
