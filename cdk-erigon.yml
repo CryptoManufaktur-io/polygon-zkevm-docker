@@ -7,7 +7,7 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  zkevm-rpc:
+  zkevm-erigon:
     image: hermeznetwork/cdk-erigon:${ERIGON_DOCKER_TAG}
     restart: "unless-stopped"
     user: 1000:1000
@@ -35,6 +35,12 @@ services:
       - 0x519E42c24163192Dca44CD3fBDCEBF6be9130987
       - --zkevm.address-ger-manager
       - 0x580bda1e7A0CFAe92Fa7F6c20A3794F169CE3CFb
+      - --zkevm.default-gas-price
+      - "1"
+      - --zkevm.max-gas-price
+      - "0"
+      - --zkevm.gas-price-factor
+      - "0.0375"
       - --zkevm.l1-chain-id
       - "1"
       - --zkevm.l1-rpc-url
