@@ -13,50 +13,19 @@ services:
     user: 1000:1000
     volumes:
       - zkevm-erigon-data:/home/erigon/.local/share/erigon
+      - ./config:/home/erigon/.local/share/erigon-config
     mem_swappiness: 0
     command:
-      - --chain
-      - hermez-mainnet
+      - --config
+      - /home/erigon/.local/share/erigon-config/${NETWORK}.yaml
+      - --zkevm.l1-rpc-url
+      - ${L1_RPC}
+      - --zkevm.rpc-ratelimit
+      - "0"
       - --externalcl
       - --maxpeers
       - "32"
       - --downloader.disable.ipv6
-      - --zkevm.l2-chain-id
-      - "1101"
-      - --zkevm.l2-sequencer-rpc-url
-      - https://zkevm-rpc.com
-      - --zkevm.l2-datastreamer-url
-      - stream.zkevm-rpc.com:6900
-      - --zkevm.address-sequencer=""
-      - --zkevm.address-zkevm=""
-      - --zkevm.address-admin
-      - 0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2
-      - --zkevm.address-rollup
-      - 0x519E42c24163192Dca44CD3fBDCEBF6be9130987
-      - --zkevm.address-ger-manager
-      - 0x580bda1e7A0CFAe92Fa7F6c20A3794F169CE3CFb
-      - --zkevm.default-gas-price
-      - "1"
-      - --zkevm.max-gas-price
-      - "0"
-      - --zkevm.gas-price-factor
-      - "0.0375"
-      - --zkevm.l1-chain-id
-      - "1"
-      - --zkevm.l1-rpc-url
-      - ${L1_RPC}
-      - --zkevm.l1-rollup-id
-      - "1"
-      - --zkevm.l1-block-range
-      - "20000"
-      - --zkevm.l1-query-delay
-      - "6000"
-      - --zkevm.l1-first-block
-      - "16896700"
-      - --zkevm.rpc-ratelimit
-      - "0"
-      - --zkevm.datastream-version
-      - "2"
       - --http
       - --http.api
       - eth,net,trace,web3,erigon,zkevm

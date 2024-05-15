@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NODE_DOCKER_TAG=${NODE_DOCKER_TAG}
-        - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
+        - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${NETWORK}/node.config.toml
     image: zkevm-rpc:${NODE_DOCKER_TAG}
     pull_policy: never
     restart: unless-stopped
@@ -33,7 +33,7 @@ services:
       - /app/zkevm-node
       - run
       - --network
-      - ${ZKEVM_NETWORK}
+      - ${NETWORK}
       - --cfg
       - /app/config.toml
       - --components
@@ -69,7 +69,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NODE_DOCKER_TAG=${NODE_DOCKER_TAG}
-        - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/node.config.toml
+        - CONFIG_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${NETWORK}/node.config.toml
     image: zkevm-sync:${NODE_DOCKER_TAG}
     pull_policy: never
     networks:
@@ -88,7 +88,7 @@ services:
       - /app/zkevm-node
       - run
       - --network
-      - ${ZKEVM_NETWORK}
+      - ${NETWORK}
       - --cfg
       - /app/config.toml
       - --components
@@ -105,7 +105,7 @@ services:
       dockerfile: Dockerfile
       args:
         - POSTGRES_DOCKER_TAG=${POSTGRES_DOCKER_TAG}
-        - POSTGRES_CONF_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/postgresql.conf
+        - POSTGRES_CONF_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${NETWORK}/postgresql.conf
         - PROVER_INIT_SQL_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/db/scripts/init_prover_db.sql
     image: zkevm-state-db:${POSTGRES_DOCKER_TAG}
     pull_policy: never
@@ -155,7 +155,7 @@ services:
       dockerfile: Dockerfile
       args:
         - PROVER_DOCKER_TAG=${PROVER_DOCKER_TAG}
-        - PROVER_JSON_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${ZKEVM_NETWORK}/prover.config.json
+        - PROVER_JSON_URL=https://github.com/0xPolygonHermez/zkevm-node/raw/release/${NODE_DOCKER_TAG}/config/environments/${NETWORK}/prover.config.json
     image: zkevm-prover:${PROVER_DOCKER_TAG}
     pull_policy: never
     restart: unless-stopped
