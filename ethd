@@ -733,6 +733,10 @@ version() {
       echo "zkevm-sync"
       docompose exec zkevm-sync /app/zkevm-node --version
       ;;
+    *cdk-erigon.yml* )
+      echo "ERIGON_DOCKER_TAG: $(grep -E '^ERIGON_DOCKER_TAG=' .env | cut -d '=' -f2)"
+      docompose exec zkevm-erigon cdk-erigon --version
+      ;;
   esac
 }
 
