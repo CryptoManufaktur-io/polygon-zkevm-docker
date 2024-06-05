@@ -22,7 +22,6 @@ services:
       - ${L1_RPC}
       - --zkevm.rpc-ratelimit
       - "0"
-      - --externalcl
       - --maxpeers
       - "32"
       - --downloader.disable.ipv6

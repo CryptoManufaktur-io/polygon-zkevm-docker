@@ -16,3 +16,5 @@ zkevm.l1-first-block: 4648290
 zkevm.l1-block-range: 100
 zkevm.l1-query-delay: 6000
 zkevm.datastream-version: 2
+
+externalcl: true
