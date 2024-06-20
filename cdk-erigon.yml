@@ -42,6 +42,7 @@ services:
       - metrics.scrape=true
       - metrics.port=6060
       - metrics.path=/debug/metrics/prometheus
+      - metrics.network=polygon-zkevm-${NETWORK}
       - traefik.enable=true
       - traefik.http.routers.${RPC_HOST}.service=${RPC_HOST}
       - traefik.http.routers.${RPC_HOST}.entrypoints=websecure
