@@ -21,7 +21,7 @@ services:
       - --zkevm.l1-rpc-url
       - ${L1_RPC}
       - --zkevm.rpc-ratelimit
-      - "0"
+      - "250"
       - --maxpeers
       - "32"
       - --downloader.disable.ipv6
