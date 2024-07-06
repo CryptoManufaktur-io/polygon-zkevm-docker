@@ -20,7 +20,7 @@ services:
       - /home/erigon/.local/share/erigon-config/${NETWORK}.yaml
       - --zkevm.l1-rpc-url
       - ${L1_RPC}
-      - --zkevm.rpc-ratelimit=0
+      - --zkevm.rpc-ratelimit=${L1_RPC_RATELIMIT:-250}
       - --maxpeers
       - "32"
       - --downloader.disable.ipv6
