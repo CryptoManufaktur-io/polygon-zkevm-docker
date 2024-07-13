@@ -20,8 +20,7 @@ services:
       - /home/erigon/.local/share/erigon-config/${NETWORK}.yaml
       - --zkevm.l1-rpc-url
       - ${L1_RPC}
-      - --zkevm.rpc-ratelimit
-      - "0"
+      - --zkevm.rpc-ratelimit=${L1_RPC_RATELIMIT:-250}
       - --maxpeers
       - "32"
       - --downloader.disable.ipv6
@@ -42,6 +41,7 @@ services:
       - metrics.scrape=true
       - metrics.port=6060
       - metrics.path=/debug/metrics/prometheus
+      - metrics.network=polygon-zkevm-${NETWORK}
       - traefik.enable=true
       - traefik.http.routers.${RPC_HOST}.service=${RPC_HOST}
       - traefik.http.routers.${RPC_HOST}.entrypoints=websecure
