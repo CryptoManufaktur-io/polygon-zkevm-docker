@@ -1,7 +1,5 @@
 datadir: /home/erigon/.local/share/erigon
 chain: hermez-mainnet
-http: true
-private.api.addr: localhost:9091
 zkevm.l2-chain-id: 1101
 zkevm.l2-sequencer-rpc-url: https://zkevm-rpc.com
 zkevm.l2-datastreamer-url: stream.zkevm-rpc.com:6900
