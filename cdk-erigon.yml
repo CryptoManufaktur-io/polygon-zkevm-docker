@@ -37,6 +37,7 @@ services:
       - --metrics
       - --metrics.addr
       - 0.0.0.0
+      - ${ERIGON_EXTRAS}
     labels:
       - metrics.scrape=true
       - metrics.port=6060
