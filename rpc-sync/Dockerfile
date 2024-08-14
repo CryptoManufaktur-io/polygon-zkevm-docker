@@ -1,7 +1,7 @@
 ARG NODE_DOCKER_TAG
 
 # Get dasel
-FROM ghcr.io/tomwright/dasel:v2.7.0-alpine as dasel
+FROM ghcr.io/tomwright/dasel:2-alpine as dasel
 
 FROM hermeznetwork/zkevm-node:${NODE_DOCKER_TAG}
 
