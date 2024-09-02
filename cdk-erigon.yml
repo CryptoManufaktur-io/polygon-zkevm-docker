@@ -15,7 +15,8 @@ services:
       - zkevm-erigon-data:/home/erigon/.local/share/erigon
       - ./config:/home/erigon/.local/share/erigon-config
     mem_swappiness: 0
-    command:
+    entrypoint:
+      - cdk-erigon
       - --config
       - /home/erigon/.local/share/erigon-config/${NETWORK}.yaml
       - --zkevm.l1-rpc-url
@@ -37,7 +38,7 @@ services:
       - --metrics
       - --metrics.addr
       - 0.0.0.0
-      - ${ERIGON_EXTRAS}
+    command: ${ERIGON_EXTRAS}
     labels:
       - metrics.scrape=true
       - metrics.port=6060
