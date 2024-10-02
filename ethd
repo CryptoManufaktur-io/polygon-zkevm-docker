@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 __project_name="Polygon zkEVM Docker"
 __app_name="Polygon zkEVM node"
-__sample_service="geth"
+__sample_service="cdk-erigon"
 __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
@@ -715,27 +715,9 @@ version() {
 # Client versions
 # Adjust for your clients and how to check their version
   case "${value}" in
-    *node.yml* )
-      echo "zkevm-pool-db"
-      docompose exec zkevm-pool-db postgres --version
-      echo
-      echo "zkevm-state-db"
-      docompose exec zkevm-state-db postgres --version
-      echo
-      echo "zkevm-prover"
-      set +e
-      docompose exec zkevm-prover zkProver --version
-      set -e
-      echo
-      echo "zkevm-rpc"
-      docompose exec zkevm-rpc /app/zkevm-node --version
-      echo
-      echo "zkevm-sync"
-      docompose exec zkevm-sync /app/zkevm-node --version
-      ;;
     *cdk-erigon.yml* )
       echo "ERIGON_DOCKER_TAG: $(grep -E '^ERIGON_DOCKER_TAG=' .env | cut -d '=' -f2)"
-      docompose exec zkevm-erigon cdk-erigon --version
+      docompose exec cdk-erigon cdk-erigon --version
       ;;
   esac
 }

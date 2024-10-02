@@ -1,5 +1,5 @@
 # To be used in conjunction with cdk-erigon.yml
 services:
-  zkevm-erigon:
+  cdk-erigon:
     ports:
       - ${SHARE_IP:-}:${RPC_PORT}:${RPC_PORT:-8545}/tcp
