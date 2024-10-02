@@ -1,6 +1,6 @@
 # Overview
 
-Docker Compose for Polygon zkEVM node. Also supports XLayer with `cdk-erigon.yml`
+Docker Compose for Polygon zkEVM node. Also supports XLayer
 
 The `./zkevmd` script can be used as a quick-start:
 
@@ -14,9 +14,9 @@ The `./zkevmd` script can be used as a quick-start:
 
 To update the software, run `./zkevmd update` and then `./zkevmd up`
 
-You can share the RPC/WS ports locally by adding `:rpc-shared.yml` to `COMPOSE_FILE` inside `.env`.
+You can share the RPC/WS port locally by adding `:rpc-shared.yml` to `COMPOSE_FILE` inside `.env`.
 
 If meant to be used with [central-proxy-docker](https://github.com/CryptoManufaktur-io/central-proxy-docker) for traefik
 and Prometheus remote write; use `:ext-network.yml` in `COMPOSE_FILE` inside `.env` in that case.
 
-This is Polygon zkEVM Docker v1.4.0
+This is Polygon zkEVM Docker v2.0.0
