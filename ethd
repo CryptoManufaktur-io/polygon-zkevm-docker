@@ -302,125 +302,6 @@ nag_os_version() {
 }
 
 
-# The actual worker. Call with volume name without directory
-# Assumes that variables for __source_pg and __target_pg have been set by the calling function
-__migrate_postgres() {
-  __source_vol="$(basename "$(pwd)")_${1}"
-  __migrated_vol="${__source_vol}-pg${__target_pg}-migrated"
-  __backup_vol="${__source_vol}-pg${__source_pg}-backup"
-
-  echo
-  echo "Migrating database ${1} from PostgreSQL ${__source_pg} to PostgreSQL ${__target_pg}"
-  echo "If this step fails, the ${__app_name} database is likely corrupted."
-  echo
-
-  dodocker volume create "${__migrated_vol}"
-  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/${__source_pg}/data" \
-    -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
-    "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
-  # Conversion can leave us with a pg_hba.conf that does not allow connections
-  dodocker run --rm -v "${__migrated_vol}":"/var/lib/postgres" \
-    alpine:3 sh -c 'grep -qxE "host\s+all\s+all\s+all\s+scram-sha-256" /var/lib/postgres/pg_hba.conf \
-    || echo "host    all             all             all                     scram-sha-256" \
-    >> /var/lib/postgres/pg_hba.conf'
-
-  echo
-  echo "Migration of ${1} complete, moving data to backup"
-  __during_migrate=1
-  dodocker volume create "${__backup_vol}"
-  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    -v "${__backup_vol}":"/var/lib/postgresql/${__source_pg}/data" \
-    alpine:3 mv /var/lib/postgresql/data/. "/var/lib/postgresql/${__source_pg}/data/"
-
-  echo "Moving migrated data to ${1} volume"
-  dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    -v "${__migrated_vol}":"/var/lib/postgresql/${__target_pg}/data" \
-    alpine:3 mv "/var/lib/postgresql/${__target_pg}/data/." /var/lib/postgresql/data/
-  __migrated=1
-  dodocker volume remove "${__migrated_vol}"
-
-  echo "A copy of your old ${1} database is in the Docker volume ${__backup_vol}."
-  echo "Confirm that everything works, and then delete it with \"docker volume rm ${__backup_vol}\"."
-}
-
-
-upgrade_postgres() {
-  __source_vol="$(basename "$(pwd)")_zkevm_state_data"
-  if [ -z "$(dodocker volume ls -q -f "name=${__source_vol}")" ]; then
-    return 0
-  fi
-
-  __target_pg=16
-  __during_postgres=1
-
-  __source_pg="$(dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    alpine:3 cat /var/lib/postgresql/data/PG_VERSION)"
-
-  if [ "${__source_pg}" -lt "${__target_pg}" ]; then
-    echo "Polygon zkEVM is using PostgreSQL ${__source_pg}. The current version is PostgreSQL ${__target_pg}."
-    echo
-    while true; do
-      read -rp "Would you like to migrate to PostgreSQL ${__target_pg}? (Y/n) " yn
-      case $yn in
-        [Nn]o | [Nn]  ) echo "Keeping PostgreSQL at version ${__source_pg}"; return 0;;
-        * ) break;;
-      esac
-    done
-  else
-      return 0
-  fi
-
-  __source_size="$(dodocker run --rm -v "${__source_vol}":"/var/lib/postgresql/data" \
-    alpine:3 du -s /var/lib/postgresql/data/ | awk '{print $1}')"
-
-  re='^[0-9]+$'
-  if ! [[ "${__source_size}" =~ $re ]] ; then
-    echo "Unable to determine database size. This is likely a bug."
-    echo "__source_size is ${__source_size}"
-    return 70
-  fi
-
-  __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
-  __free_space=$(df -P "${__docker_dir}" | awk '/[0-9]%/{print $(NF-2)}')
-
-  re='^[0-9]+$'
-  if ! [[ "${__free_space}" =~ $re ]] ; then
-    echo "Unable to determine free disk space. This is likely a bug."
-    echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-    return 70
-  fi
-
-  if [[ "${__free_space}" -lt $(( __source_size + 10485760 )) ]]; then
-    echo
-    echo "You don't have enough free space to migrate the database."
-    echo "It is $(( __source_size / 1024 / 1024 )) GiB in size and you need as much free again."
-    echo
-    df -h "${__docker_dir}"
-    echo
-    return
-  fi
-
-  echo "Stopping ${__app_name}"
-  down
-
-  dodocker pull "pats22/postgres-upgrade:${__source_pg}-to-${__target_pg}"
-
-  __migrate_postgres zkevm_state_data
-  __migrate_postgres zkevm_pool_data
-
-  echo
-  echo "Adjusting PostgreSQL Docker tag"
-  var="POSTGRES_DOCKER_TAG"
-# This gets used, but shellcheck doesn't recognize that
-# shellcheck disable=SC2034
-  POSTGRES_DOCKER_TAG=${__target_pg}-bookworm
-  set_value_in_env
-  echo "${__app_name} has been stopped. You'll need to run \"$__me up\" to start it again."
-  echo
-  __during_postgres=0
-}
-
-
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
@@ -519,7 +400,6 @@ find the original contents in ${ENV_FILE}.bak."
     echo "The current partial update risks startup failure."
   fi
 
-  upgrade_postgres
   nag_os_version
 
   unset ETHDSECUNDO
@@ -684,25 +564,6 @@ handle_error() {
     echo "Restored your ${ENV_FILE} file, to undo partial migration. Please verify it looks correct."
     echo "The partially migrated file is in ${ENV_FILE}.partial for troubleshooting."
   fi
-  if [ "$__during_postgres" -eq 1 ]; then
-    echo
-    if [ "$__during_migrate" -eq 1 ] && [ "$__migrated" -eq 0 ]; then
-        echo "Era database migration failed, while switching to the migrated data."
-        echo
-        echo "The ${__source_vol} database is likely corrupted at this point."
-        echo "The backup volume can be seen with \"docker volume ls\"."
-    elif [ "$__migrated" -eq 1 ]; then
-        echo "${__source_vol} database migration failed, after switching to the migrated data."
-        echo
-        echo "The database itself is likely fine, but somewhere in the switch to PostgreSQL 16"
-        echo "an error occured, which is likely to keep your node from functioning correctly."
-    else
-        echo "${__source_vol} database migration failed, but before removing the original data."
-        echo
-        echo "Your original database remains in place."
-        echo "You can safely update the node again, this time without migration, and start it."
-    fi
-  fi
 }
 
 
@@ -763,7 +624,6 @@ help() {
 ENV_FILE=.env
 __during_update=0
 __during_migrate=0
-__during_postgres=0
 __migrated=0
 __command=""
 __me="./$(basename "${BASH_SOURCE[0]}")"
