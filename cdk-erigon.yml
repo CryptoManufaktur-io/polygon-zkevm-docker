@@ -12,7 +12,7 @@ services:
     restart: "unless-stopped"
     user: 1000:1000
     volumes:
-      - cdk-erigon-data:/home/erigon/.local/share/erigon
+      - zkevm-erigon-data:/home/erigon/.local/share/erigon
       - ./config:/home/erigon/.local/share/erigon-config
     mem_swappiness: 0
     entrypoint:
@@ -36,6 +36,12 @@ services:
       - --http.vhosts=*
       - --http.corsdomain=*
       - --ws
+      - --ws.api
+      - eth,net,trace,web3,erigon,zkevm
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - ${WS_PORT}
       - --metrics
       - --metrics.addr
       - 0.0.0.0
@@ -55,7 +61,16 @@ services:
       - traefik.http.routers.${RPC_HOST}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
       - traefik.http.routers.${RPC_HOST}lb.tls.certresolver=letsencrypt
       - traefik.http.services.${RPC_HOST}.loadbalancer.server.port=${RPC_PORT}
+      - traefik.http.routers.${WS_HOST}.service=${WS_HOST}
+      - traefik.http.routers.${WS_HOST}.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST}.rule=Host(`${WS_HOST}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${WS_HOST}lb.service=${WS_HOST}
+      - traefik.http.routers.${WS_HOST}lb.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST}lb.rule=Host(`${WS_LB}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${WS_HOST}.loadbalancer.server.port=${WS_PORT}
     <<: *logging
 
 volumes:
-  cdk-erigon-data:
+  zkevm-erigon-data:
