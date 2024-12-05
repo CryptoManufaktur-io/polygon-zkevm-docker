@@ -19,4 +19,4 @@ You can share the RPC/WS port locally by adding `:rpc-shared.yml` to `COMPOSE_FI
 If meant to be used with [central-proxy-docker](https://github.com/CryptoManufaktur-io/central-proxy-docker) for traefik
 and Prometheus remote write; use `:ext-network.yml` in `COMPOSE_FILE` inside `.env` in that case.
 
-This is Polygon zkEVM Docker v3.0.0
+This is Polygon zkEVM Docker v3.0.1
