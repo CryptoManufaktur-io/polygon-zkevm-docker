@@ -3,4 +3,3 @@ services:
   cdk-erigon:
     ports:
       - ${SHARE_IP:-}:${RPC_PORT}:${RPC_PORT:-8545}/tcp
-      - ${SHARE_IP:-}:${WS_PORT}:${WS_PORT:-8546}/tcp
