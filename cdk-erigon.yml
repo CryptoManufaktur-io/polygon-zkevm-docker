@@ -7,6 +7,19 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
+  init:
+    restart: "no"
+    build:
+      context: ./init
+      dockerfile: Dockerfile
+    image: init:polygon-zkevm
+    user: 1000:1000
+    pull_policy: never
+    environment:
+      - SNAPSHOT=${SNAPSHOT:-}
+    volumes:
+      - zkevm-erigon-data:/tmp/cdk-erigon
+      - /etc/localtime:/etc/localtime:ro
   cdk-erigon:
     image: hermeznetwork/cdk-erigon:${ERIGON_DOCKER_TAG}
     restart: "unless-stopped"
@@ -15,6 +28,9 @@ services:
       - zkevm-erigon-data:/home/erigon/.local/share/erigon
       - ./config:/home/erigon/.local/share/erigon-config
     mem_swappiness: 0
+    depends_on:
+      init:
+        condition: service_completed_successfully
     entrypoint:
       - cdk-erigon
       - --config

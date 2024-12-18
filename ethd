@@ -428,9 +428,8 @@ envmigrate() {
     return 0
   fi
 
-# Adjust these vars to your project
   ALL_VARS=( COMPOSE_FILE NETWORK L1_RPC L1_RPC_RATELIMIT SCRIPT_TAG ERIGON_DOCKER_TAG WS_HOST WS_LB \
-             RPC_PORT WS_PORT SHARE_IP DOMAIN RPC_HOST RPC_LB ERIGON_EXTRAS )
+             RPC_PORT WS_PORT SHARE_IP DOMAIN RPC_HOST RPC_LB ERIGON_EXTRAS SNAPSHOT )
   OLD_VARS=( )
   NEW_VARS=( )
 
@@ -450,8 +449,7 @@ envmigrate() {
   # Migrate over user settings
   for var in "${ALL_VARS[@]}"; do
     value=$(sed -n -e "s/^${var}=\(.*\)/\1/p" "${ENV_FILE}.source" || true)
-# Adjust for vars that are possibly empty
-    if [ -n "${value}" ] || [ "${var}" = "SNAPSHOT" ]; then
+    if [ -n "${value}" ]; then
       sed -i'.original' -e "s~^\(${var}\s*=\s*\).*$~\1${value}~" "${ENV_FILE}"
     fi
   done
@@ -474,7 +472,26 @@ upgrade() {
 
 
 start() {
-  docompose up -d --remove-orphans "$@"
+  if ! type -P screen >/dev/null 2>&1; then
+    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y screen
+  fi
+  __var="NETWORK"
+  NETWORK=$(sed -n -e "s/^${__var}=\(.*\)/\1/p" "${ENV_FILE}" || true)
+  rm -f "/tmp/zkevm-${NETWORK}-compose-screen.log"
+  screen -dmS "zkevm-${NETWORK}-compose-session" -L -Logfile "/tmp/zkevm-${NETWORK}-compose-screen.log" ${__compose_exe} up -d --remove-orphans "$@"
+  echo "Running \"docker compose up -d\" in screen because of the init container."
+  echo
+  echo "If this is your first start and you are getting a SNAPSHOT, you can view the init logs:"
+  echo "\"./ethd logs -f init\""
+  echo
+  echo "You can attach to the screen session with \"screen -r zkevm-${NETWORK}-compose-session\""
+  echo
+  echo "Waiting 5 seconds"
+  sleep 5
+  echo
+  echo "Here's the output of docker compose so far:"
+  cat "/tmp/zkevm-${NETWORK}-compose-screen.log"
+  echo
 }
 
 
