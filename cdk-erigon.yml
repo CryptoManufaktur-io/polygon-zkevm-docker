@@ -20,6 +20,7 @@ services:
     volumes:
       - zkevm-erigon-data:/tmp/cdk-erigon
       - /etc/localtime:/etc/localtime:ro
+
   cdk-erigon:
     image: hermeznetwork/cdk-erigon:${ERIGON_DOCKER_TAG}
     restart: "unless-stopped"
