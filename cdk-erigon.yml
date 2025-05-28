@@ -22,13 +22,13 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
   cdk-erigon:
-    image: ${ERIGON_SRC_REPO}:${ERIGON_SRC_TAG}
+    image: ${NETWORK}-cdk-erigon:local
     build:
       context: ${ERIGON_DOCKER_CONTEXT}
       dockerfile: ${ERIGON_DOCKERFILE}
       args:
-        - ERIGON_SRC_TAG=${ERIGON_SRC_TAG}
-        - ERIGON_SRC_REPO=${ERIGON_SRC_REPO}
+        - SRC_TAG=${ERIGON_SRC_TAG}
+        - SRC_REPO=${ERIGON_SRC_REPO}
     restart: "unless-stopped"
     pull_policy: never
     user: 1000:1000
