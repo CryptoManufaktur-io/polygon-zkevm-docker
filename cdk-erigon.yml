@@ -22,7 +22,13 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
   cdk-erigon:
-    image: hermeznetwork/cdk-erigon:${ERIGON_DOCKER_TAG}
+    image: ${ERIGON_DOCKER_REPO}:${ERIGON_DOCKER_TAG}
+    build:
+      context: ${ERIGON_DOCKER_CONTEXT}
+      dockerfile: ${ERIGON_DOCKERFILE}
+      args:
+        - ERIGON_DOCKER_TAG=${OPGETH_DOCKER_TAG}
+        - ERIGON_DOCKER_REPO=${OPGETH_DOCKER_REPO}
     restart: "unless-stopped"
     user: 1000:1000
     volumes:
