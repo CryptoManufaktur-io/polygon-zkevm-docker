@@ -24,11 +24,11 @@ services:
   cdk-erigon:
     image: ${NETWORK}-cdk-erigon:local
     build:
-      context: ${ERIGON_DOCKER_CONTEXT}
+      context: ${DOCKER_CONTEXT}
       dockerfile: ${ERIGON_DOCKERFILE}
       args:
-        - SRC_TAG=${ERIGON_SRC_TAG}
-        - SRC_REPO=${ERIGON_SRC_REPO}
+        - DOCKER_TAG=${DOCKER_TAG}
+        - DOCKER_REPO=${DOCKER_REPO}
     restart: "unless-stopped"
     pull_policy: never
     user: 1000:1000

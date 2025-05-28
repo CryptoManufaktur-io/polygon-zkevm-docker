@@ -1,4 +1,4 @@
-ARG SRC_TAG=v2.60.0
-ARG SRC_REPO=hermeznetwork/cdk-erigon
+ARG DOCKER_TAG=v2.60.0
+ARG DOCKER_REPO=hermeznetwork/cdk-erigon
 
-FROM ${SRC_REPO}:${SRC_TAG}
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
