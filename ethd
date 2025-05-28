@@ -21,7 +21,7 @@ version() {
 # Adjust for your clients and how to check their version
   case "${__value}" in
     *cdk-erigon.yml* )
-      echo "ERIGON_DOCKER_TAG: $(grep -E '^ERIGON_DOCKER_TAG=' .env | cut -d '=' -f2)"
+      echo "ERIGON_SRC_TAG: $(grep -E '^ERIGON_SRC_TAG=' .env | cut -d '=' -f2)"
       __docompose exec cdk-erigon cdk-erigon --version
       ;;
   esac
