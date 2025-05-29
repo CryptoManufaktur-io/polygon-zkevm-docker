@@ -1,0 +1,4 @@
+ARG DOCKER_TAG=v2.60.0
+ARG DOCKER_REPO=hermeznetwork/cdk-erigon
+
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
